@@ -1,20 +1,53 @@
 @import "tailwindcss";
 
-/* Paleta do layout de referência (Casa Interior): preto, creme e vinho, com o caramelo dos projetos da Tainá. */
+/*
+  Paleta tirada da identidade da Tainá (não há manual de marca):
+  - logo em grafite sobre branco, material impresso em papel claro;
+  - terracota e dourado da coleção de louças dos 15 anos do escritório;
+  - caramelo e madeira dos projetos.
+  As cores são variáveis: .tone-dark (espresso) e .tone-accent (terracota) trocam o tom de uma seção inteira.
+  Nomes das classes: night = fundo, cream = texto, coal = cartão, wine = painel de destaque, sand = detalhe.
+*/
+:root {
+  --c-bg: #f1eee8; /* linho */
+  --c-fg: #2b2724; /* grafite do logo */
+  --c-card: #e5dfd5; /* pedra clara */
+  --c-accent: #8b3a1e; /* terracota da coleção */
+  --c-detail: #8a6d2f; /* dourado (escurecido para ler em fundo claro) */
+}
+.tone-dark {
+  --c-bg: #1d1815; /* espresso */
+  --c-fg: #efede8;
+  --c-card: #2a2420;
+  --c-detail: #c9ad6c;
+}
+.tone-accent {
+  --c-bg: #8b3a1e;
+  --c-fg: #f7efe6;
+  --c-card: #74301a;
+  --c-detail: #e7c98a;
+}
+
 @theme inline {
-  --color-night: #000000;
-  --color-coal: #161412;
-  --color-cream: #e1e0cc;
-  --color-wine: #450204;
-  --color-sand: #c9a77c;
+  --color-night: var(--c-bg);
+  --color-coal: var(--c-card);
+  --color-cream: var(--c-fg);
+  --color-wine: var(--c-accent);
+  --color-sand: var(--c-detail);
+  --color-espresso: #1d1815;
+  --color-linen: #f1eee8;
   --font-sans: var(--font-host), "Host Grotesk", system-ui, sans-serif;
 }
 
 body {
-  background: var(--color-night);
-  color: var(--color-cream);
+  background: var(--c-bg);
+  color: var(--c-fg);
   font-family: var(--font-sans);
   letter-spacing: -0.01em;
+}
+.tone-dark,
+.tone-accent {
+  color: var(--c-fg);
 }
 
 section[id] {

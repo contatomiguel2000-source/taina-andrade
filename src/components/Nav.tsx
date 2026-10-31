@@ -104,7 +104,7 @@ export function BackButton() {
     <button
       type="button"
       onClick={() => history.back()}
-      className={`fixed bottom-5 left-4 z-[65] flex items-center gap-3 border border-cream/25 bg-wine py-3 pl-3 pr-5 ring-1 ring-ink/10 text-left text-cream shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-night md:bottom-8 md:left-8 ${
+      className={`tone-accent fixed bottom-5 left-4 z-[65] flex items-center gap-3 border border-cream/25 bg-wine py-3 pl-3 pr-5 ring-1 ring-ink/10 text-left text-cream shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-night md:bottom-8 md:left-8 ${
         jump ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-6 opacity-0"
       }`}
       aria-hidden={!jump}

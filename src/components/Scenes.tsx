@@ -136,7 +136,7 @@ export function HeroScene({ images }: { images: string[] }) {
   return (
     <div ref={wrap} className="absolute inset-0">
       <Canvas frameloop={vis ? "always" : "never"} dpr={[1, 1.75]} camera={{ position: [0, 0, 6], fov: 50 }} gl={{ antialias: true, alpha: true }}>
-        <fog attach="fog" args={["#0b0907", 9, 26]} />
+        <fog attach="fog" args={["#1d1815", 9, 26]} />
         <HeroRig items={items} scrollRef={scroll} />
         <Dust />
       </Canvas>
@@ -204,7 +204,7 @@ export function RingScene({ items, onSelect, onFront, rot }: { items: RingProjec
   return (
     <div ref={wrap} className="absolute inset-0">
       <Canvas frameloop={vis ? "always" : "never"} dpr={[1, 1.75]} camera={{ position: [0, 0.6, 10.5], fov: 42 }} gl={{ antialias: true, alpha: true }}>
-        <fog attach="fog" args={["#0b0907", 9, 17]} />
+        <fog attach="fog" args={["#1d1815", 9, 17]} />
         <Ring items={items} rot={rot} onSelect={onSelect} onFront={onFront} />
       </Canvas>
     </div>

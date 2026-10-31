@@ -117,12 +117,15 @@ export function Header() {
   }, []);
   return (
     <>
-      <header className={`fixed inset-x-0 top-0 z-50 transition-transform duration-500 ${hidden && !open ? "-translate-y-full" : ""}`}>
+      <header className={`tone-dark fixed inset-x-0 top-0 z-50 bg-transparent transition-transform duration-500 ${hidden && !open ? "-translate-y-full" : ""}`}>
         <div className={`${wrap} flex h-[4.5rem] items-center justify-between`}>
-          <a href="#inicio" data-no-back onClick={close} className="pill bg-night/70 text-[0.8rem] font-medium tracking-[0.04em] text-cream backdrop-blur-md">
+          <a href="#inicio" data-no-back onClick={close} className="pill gap-2.5 bg-night/80 py-1.5 pl-2 text-[0.8rem] font-medium tracking-[0.04em] text-cream backdrop-blur-md">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-linen">
+              <Image src={asset("/img/logo-grafite.png")} alt="" width={12} height={14} unoptimized className="h-3.5 w-auto" />
+            </span>
             TAINÁ ANDRADE
           </a>
-          <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="pill gap-3 bg-night/70 text-[0.8rem] text-cream backdrop-blur-md">
+          <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="pill gap-3 bg-night/80 text-[0.8rem] text-cream backdrop-blur-md">
             {open ? "Fechar" : "Menu"}
             <span className="flex w-4 flex-col gap-[4px]">
               <span className={`h-px w-4 bg-current transition-transform ${open ? "translate-y-[2.5px] rotate-45" : ""}`} />
@@ -133,16 +136,16 @@ export function Header() {
       </header>
       {/* menu: painel que desce com perspectiva 3D */}
       <div className={`fixed inset-0 z-40 [perspective:1400px] ${open ? "" : "pointer-events-none"}`} aria-hidden={!open}>
-        <div className={`absolute inset-0 bg-night/60 backdrop-blur-sm transition-opacity duration-500 ${open ? "opacity-100" : "opacity-0"}`} onClick={close} />
+        <div className={`absolute inset-0 bg-espresso/40 backdrop-blur-sm transition-opacity duration-500 ${open ? "opacity-100" : "opacity-0"}`} onClick={close} />
         <div
-          className="absolute right-4 top-20 w-[min(26rem,calc(100%-2rem))] origin-top rounded-[18px] bg-wine p-6 text-cream shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:right-[max(2rem,calc((100vw-1160px)/2))]"
+          className="tone-accent absolute right-4 top-20 w-[min(26rem,calc(100%-2rem))] origin-top rounded-[18px] bg-wine p-6 text-cream shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:right-[max(2rem,calc((100vw-1160px)/2))]"
           style={{ transform: open ? "rotateX(0deg)" : "rotateX(-70deg) translateY(-20px)", opacity: open ? 1 : 0 }}
         >
           <nav aria-label="Menu principal">
             {nav.map((n, i) => (
               <a key={n.href} href={n.href} tabIndex={open ? 0 : -1} onClick={close} className="group flex items-baseline justify-between border-b border-cream/15 py-3 text-[1.9rem] leading-none tracking-[-0.03em]" style={{ transition: `opacity .5s ${0.15 + i * 0.05}s, transform .5s ${0.15 + i * 0.05}s`, opacity: open ? 1 : 0, transform: open ? "none" : "translateY(12px)" }}>
                 <span className="transition-transform duration-500 group-hover:translate-x-2">{n.label}</span>
-                <span className="text-[0.75rem] text-cream/60">0{i + 1}</span>
+                <span className="text-[0.75rem] text-cream/75">0{i + 1}</span>
               </a>
             ))}
           </nav>
@@ -178,13 +181,13 @@ export function Hero() {
   const k = reduced() ? 0 : clamp(y / 800);
   return (
     <section id="inicio" data-title="o início" className="relative h-[100svh] min-h-[620px] overflow-hidden bg-night p-2 md:p-3">
-      <div className="relative h-full overflow-hidden rounded-[18px] bg-[#0b0907]">
+      <div className="tone-dark relative h-full overflow-hidden rounded-[18px] bg-espresso">
         {/* sem WebGL: a foto do living em tela cheia */}
         <div className={`absolute inset-0 transition-opacity duration-1000 ${gl ? "opacity-30" : "opacity-100"}`}>
           <Image src={asset("/img/altiplano-living-0.webp")} alt="Living social do Apartamento Altiplano, projeto de Tainá Andrade" fill priority unoptimized sizes="100vw" className="animate-[kenburns_3s_cubic-bezier(0.16,1,0.3,1)_both] object-cover" />
         </div>
         {gl && <HeroScene images={heroImgs} />}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0b0907] via-[#0b0907]/20 to-[#0b0907]/50" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-espresso via-espresso/20 to-espresso/50" />
 
         <div className={`${wrap} pointer-events-none relative flex h-full flex-col justify-end pb-6 md:pb-8`} style={{ opacity: 1 - k * 1.2 }}>
           <div className="mb-6 flex flex-wrap items-end justify-between gap-6">
@@ -206,7 +209,7 @@ export function Hero() {
           </h1>
         </div>
         <div className={`${wrap} pointer-events-none absolute inset-x-0 top-24 hidden justify-end md:flex`}>
-          <p className="animate-[fadeUp_1s_1.4s_both] text-[0.72rem] uppercase tracking-[0.12em] text-cream/60">Mova o mouse · role para entrar</p>
+          <p className="animate-[fadeUp_1s_1.4s_both] text-[0.72rem] uppercase tracking-[0.12em] text-cream/75">Mova o mouse · role para entrar</p>
         </div>
       </div>
     </section>
@@ -222,11 +225,11 @@ export function Statement() {
   const tilt = (p - 0.5) * -10;
   return (
     <div ref={ref} className="[perspective:1600px]">
-      <div className="rounded-[18px] bg-wine px-6 py-16 text-center transition-transform duration-300 md:px-16 md:py-24" style={{ transform: reduced() ? "none" : `rotateX(${tilt}deg)` }}>
-        <p className="eyebrow text-cream/70">O estúdio*</p>
+      <div className="tone-accent rounded-[18px] bg-wine px-6 py-16 text-center transition-transform duration-300 md:px-16 md:py-24" style={{ transform: reduced() ? "none" : `rotateX(${tilt}deg)` }}>
+        <p className="eyebrow text-cream/90">O estúdio*</p>
         <p className="mx-auto mt-6 max-w-[46rem] text-[clamp(1.55rem,3vw,2.6rem)] leading-[1.15] tracking-[-0.03em]">
           {words.map((w, i) => (
-            <span key={i} className="transition-colors duration-300" style={{ color: i < lit ? "var(--color-cream)" : "rgba(225,224,204,0.32)" }}>
+            <span key={i} className="transition-colors duration-300" style={{ color: i < lit ? "var(--color-cream)" : "color-mix(in srgb, var(--c-fg) 38%, transparent)" }}>
               {w}{" "}
             </span>
           ))}
@@ -267,7 +270,7 @@ export function Projects() {
     <div ref={secRef}>
       <div className="grid gap-8 md:grid-cols-[1fr_17rem] md:items-end">
         <div>
-          <p className="eyebrow text-cream/60">Projetos selecionados*</p>
+          <p className="eyebrow text-cream/75">Projetos selecionados*</p>
           <h2 className="t-h1 mt-4">Espaços com histórias para contar.</h2>
         </div>
         <p className="text-[0.95rem] text-cream/75">{n} projetos residenciais, comerciais e de mostra. Arraste o anel, role a página ou escolha na lista.</p>
@@ -316,7 +319,7 @@ export function Projects() {
             </span>
             <span className="flex-1">
               <span className="block text-[1.05rem] tracking-[-0.02em]">{x.title}</span>
-              <span className="block text-[0.8rem] text-cream/60">
+              <span className="block text-[0.8rem] text-cream/75">
                 {x.kind} | {x.year}
               </span>
             </span>
@@ -347,7 +350,7 @@ function ProjectModal({ index, setIndex }: { index: number; setIndex: (v: number
   useLayer(true, close, keys);
   const swipe = useRef<number | null>(null);
   return (
-    <div className="fixed inset-0 z-[70] grid animate-[fadeUp_0.5s_cubic-bezier(0.16,1,0.3,1)_both] bg-night text-cream md:grid-cols-[1fr_24rem]" role="dialog" aria-modal="true" aria-label={pr.title}>
+    <div className="tone-dark fixed inset-0 z-[70] grid animate-[fadeUp_0.5s_cubic-bezier(0.16,1,0.3,1)_both] bg-night text-cream md:grid-cols-[1fr_24rem]" role="dialog" aria-modal="true" aria-label={pr.title}>
       <div
         className="relative min-h-[52svh] touch-pan-y [perspective:1600px]"
         onPointerDown={(e) => (swipe.current = e.clientX)}
@@ -378,13 +381,13 @@ function ProjectModal({ index, setIndex }: { index: number; setIndex: (v: number
       <aside className="flex flex-col overflow-y-auto border-cream/10 bg-coal p-6 md:border-l md:p-8">
         <div className="flex items-center justify-between">
           <CloseButton onClick={close} />
-          <span className="text-[0.75rem] text-cream/55">Esc ou voltar do celular</span>
+          <span className="text-[0.75rem] text-cream/75">Esc ou voltar do celular</span>
         </div>
-        <p className="eyebrow mt-8 text-cream/60">
+        <p className="eyebrow mt-8 text-cream/75">
           {pr.kind} | {pr.year}
         </p>
         <h3 className="mt-2 text-[2.1rem] leading-[1.02] tracking-[-0.04em]">{pr.title}</h3>
-        <p className="mt-1 text-cream/65">{pr.place}</p>
+        <p className="mt-1 text-cream/80">{pr.place}</p>
         <p className="mt-6 leading-relaxed text-cream/85">{pr.text}</p>
         {pr.facts && (
           <ul className="mt-5 space-y-1.5 border-t border-cream/15 pt-5 text-[0.95rem]">
@@ -396,7 +399,7 @@ function ProjectModal({ index, setIndex }: { index: number; setIndex: (v: number
             ))}
           </ul>
         )}
-        {pr.credit && <p className="mt-4 text-[0.82rem] text-cream/55">{pr.credit}</p>}
+        {pr.credit && <p className="mt-4 text-[0.82rem] text-cream/75">{pr.credit}</p>}
         <div className="mt-auto grid grid-cols-4 gap-2 pt-8">
           {pr.gallery.map((src, k) => (
             <button key={src} type="button" onClick={() => setImg(k)} className={`relative aspect-square overflow-hidden rounded-[6px] transition-opacity ${k === img ? "opacity-100 ring-2 ring-cream" : "opacity-45 hover:opacity-90"}`} aria-label={`Ver foto ${k + 1}`}>
@@ -435,7 +438,7 @@ export function Featured() {
   return (
     <div ref={ref} className="[perspective:1800px]">
       <div
-        className="relative overflow-hidden rounded-[18px] transition-transform duration-500 ease-out"
+        className="tone-dark relative overflow-hidden rounded-[18px] transition-transform duration-500 ease-out"
         style={{ transform: reduced() ? "none" : `rotateX(${m.y * -4}deg) rotateY(${m.x * 5}deg) scale(${0.94 + clamp(p * 1.6) * 0.06})` }}
         onPointerMove={(e) => {
           if (e.pointerType !== "mouse") return;
@@ -463,7 +466,7 @@ export function Featured() {
         </div>
       </div>
       {open && (
-        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center gap-4 bg-night/96 p-4" role="dialog" aria-modal="true" aria-label="Filme do Living de Memórias">
+        <div className="tone-dark fixed inset-0 z-[70] flex flex-col items-center justify-center gap-4 bg-night/96 p-4" role="dialog" aria-modal="true" aria-label="Filme do Living de Memórias">
           <div className="absolute left-4 top-4 md:left-8 md:top-8">
             <CloseButton onClick={close} />
           </div>
@@ -491,7 +494,7 @@ export function Expertise() {
         >
           <div className="relative h-full w-full transition-transform duration-[0.9s] ease-[cubic-bezier(0.16,1,0.3,1)] [transform-style:preserve-3d]" style={{ transform: flip === i ? "rotateY(180deg)" : "none" }}>
             {/* frente */}
-            <div className="absolute inset-0 overflow-hidden rounded-[18px] [backface-visibility:hidden]">
+            <div className="tone-dark absolute inset-0 overflow-hidden rounded-[18px] [backface-visibility:hidden]">
               <Image src={asset(e.image)} alt="" fill quality={88} sizes="(min-width: 768px) 380px, 100vw" className="object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-night/85 via-transparent to-transparent" />
               <p className="absolute bottom-5 left-5 text-[1.8rem] tracking-[-0.03em]">{e.title}.</p>
@@ -544,11 +547,11 @@ export function Process() {
       </div>
       <div className="space-y-4 md:space-y-[18vh] md:py-[12vh]">
         {steps.map((s, i) => (
-          <div key={s.n} ref={(el) => void (refs.current[i] = el)} data-i={i} className={`rounded-[14px] border p-6 transition-all duration-500 ${i === active ? "border-cream/25 bg-night" : "border-transparent bg-night/40 opacity-60"}`}>
+          <div key={s.n} ref={(el) => void (refs.current[i] = el)} data-i={i} className={`rounded-[14px] border p-6 transition-all duration-500 ${i === active ? "border-cream/25 bg-night" : "border-transparent bg-night/40 opacity-75"}`}>
             <div className="relative mb-4 aspect-[16/10] overflow-hidden rounded-[10px] md:hidden">
               <Image src={asset(s.image)} alt="" fill quality={85} sizes="100vw" className="object-cover" />
             </div>
-            <p className="text-[0.75rem] text-cream/60">{s.n}</p>
+            <p className="text-[0.75rem] text-cream/75">{s.n}</p>
             <p className="mt-2 text-[1.5rem] tracking-[-0.03em]">{s.title}</p>
             <p className="mt-2 leading-relaxed text-cream/80">{s.text}</p>
           </div>
@@ -564,22 +567,22 @@ export function Philosophy() {
   const [open, setOpen] = useState(0);
   return (
     <div className="grid items-center gap-8 md:grid-cols-[1fr_1.05fr]">
-      <div className="relative h-[24rem] overflow-hidden rounded-[18px] bg-[#120d0a] md:h-[32rem]" data-cursor="Mova">
+      <div className="tone-dark relative h-[24rem] overflow-hidden rounded-[18px] bg-espresso md:h-[32rem]" data-cursor="Mova">
         {gl ? (
           <ArchScene />
         ) : (
           <Image src={asset("/img/villa-b-0.webp")} alt="Aberturas em arco da Villa Mediterrânea" fill quality={88} sizes="560px" className="object-cover" />
         )}
-        <p className="pointer-events-none absolute bottom-4 left-5 text-[0.78rem] text-cream/65">Arcos: das villas mediterrâneas às venezianas do Living de Memórias.</p>
+        <p className="pointer-events-none absolute bottom-4 left-5 text-[0.78rem] text-cream/80">Arcos: das villas mediterrâneas às venezianas do Living de Memórias.</p>
       </div>
       <div>
-        <p className="eyebrow text-cream/60">Nossa filosofia*</p>
+        <p className="eyebrow text-cream/75">Nossa filosofia*</p>
         <h2 className="t-h1 mt-4">Projetar também é pensar no tempo.</h2>
         <div className="mt-8 border-t border-cream/15">
           {philosophy.map((f, i) => (
             <div key={f.title} className="border-b border-cream/15">
               <button type="button" onClick={() => setOpen(i)} aria-expanded={open === i} className="group flex w-full items-center justify-between gap-4 py-4 text-left">
-                <span className={`text-[1.3rem] tracking-[-0.02em] transition-all duration-500 ${open === i ? "translate-x-0 text-cream" : "text-cream/60 group-hover:translate-x-2 group-hover:text-cream"}`}>{f.title}</span>
+                <span className={`text-[1.3rem] tracking-[-0.02em] transition-all duration-500 ${open === i ? "translate-x-0 text-cream" : "text-cream/75 group-hover:translate-x-2 group-hover:text-cream"}`}>{f.title}</span>
                 <span className={`transition-transform duration-500 ${open === i ? "rotate-45" : ""}`}>
                   <IconPlus />
                 </span>
@@ -637,7 +640,7 @@ export function Videos() {
         </button>
         <p className="min-w-[12rem] text-center">
           <span className="block text-[1.1rem] tracking-[-0.02em]">{videos[active].title}</span>
-          <span className="text-[0.82rem] text-cream/65">
+          <span className="text-[0.82rem] text-cream/80">
             {videos[active].text} · {videos[active].views} visualizações
           </span>
         </p>
@@ -646,7 +649,7 @@ export function Videos() {
         </button>
       </div>
       {v && (
-        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center gap-4 bg-night/96 p-4" role="dialog" aria-modal="true" aria-label={v.title}>
+        <div className="tone-dark fixed inset-0 z-[70] flex flex-col items-center justify-center gap-4 bg-night/96 p-4" role="dialog" aria-modal="true" aria-label={v.title}>
           <div className="absolute left-4 top-4 md:left-8 md:top-8">
             <CloseButton onClick={close} />
           </div>
@@ -698,11 +701,11 @@ export function Testimonials() {
               <Image src={asset(x.image)} alt="" fill quality={88} sizes="(min-width: 768px) 440px, 100vw" className="object-cover" />
             </div>
           ))}
-          <div className="absolute inset-x-3 bottom-3 rounded-[12px] bg-night/75 p-4 backdrop-blur-md">
+          <div className="tone-dark absolute inset-x-3 bottom-3 rounded-[12px] bg-night/80 p-4 backdrop-blur-md">
             <p key={t.name} className="animate-[fadeUp_0.6s_both] text-[1.15rem] tracking-[-0.02em]">
               {t.name}
             </p>
-            <p className="text-[0.8rem] text-cream/65">{t.detail}</p>
+            <p className="text-[0.8rem] text-cream/80">{t.detail}</p>
           </div>
         </div>
         <div className="flex flex-col justify-between rounded-[18px] bg-coal p-6 md:p-9">
@@ -712,7 +715,7 @@ export function Testimonials() {
                 <IconStar key={k} className="h-3.5 w-3.5" />
               ))}
             </span>
-            <span className="text-[0.78rem] tabular-nums text-cream/60">
+            <span className="text-[0.78rem] tabular-nums text-cream/75">
               {String(i + 1).padStart(2, "0")} | {String(n).padStart(2, "0")}
             </span>
           </div>
@@ -735,7 +738,7 @@ export function Testimonials() {
       </div>
       <div className="mt-4 grid grid-cols-3 gap-2 md:grid-cols-6">
         {testimonials.map((x, k) => (
-          <button key={x.name} type="button" onClick={() => setI(k)} className={`border-b pb-2 text-left text-[0.8rem] transition-colors ${k === i ? "border-cream text-cream" : "border-cream/15 text-cream/55 hover:text-cream"}`}>
+          <button key={x.name} type="button" onClick={() => setI(k)} className={`border-b pb-2 text-left text-[0.8rem] transition-colors ${k === i ? "border-cream text-cream" : "border-cream/15 text-cream/75 hover:text-cream"}`}>
             {x.name.split(" ")[0]}
           </button>
         ))}
@@ -815,7 +818,7 @@ export function ContactForm() {
     >
       <input required value={f.nome} onChange={set("nome")} placeholder="Seu nome" aria-label="Seu nome" className={field} />
       <input required value={f.cidade} onChange={set("cidade")} placeholder="Sua cidade" aria-label="Sua cidade" className={field} />
-      <select value={f.tipo} onChange={set("tipo")} aria-label="Tipo de projeto" className={`${field} [&>option]:text-night`}>
+      <select value={f.tipo} onChange={set("tipo")} aria-label="Tipo de projeto" className={`${field} [&>option]:text-espresso`}>
         {kinds.map((k) => (
           <option key={k}>{k}</option>
         ))}

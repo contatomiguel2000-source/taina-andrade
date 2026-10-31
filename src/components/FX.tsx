@@ -87,7 +87,7 @@ export function Cursor() {
       <div ref={ring} className="pointer-events-none fixed left-0 top-0 z-[90] hidden [@media(pointer:fine)]:block" aria-hidden>
         <span
           className={`flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-center text-[0.78rem] font-medium leading-tight text-cream transition-[width,height,background-color,border-color] duration-300 ease-out ${
-            label ? "h-24 w-24 bg-wine" : hot ? "h-12 w-12 border border-accent bg-wine/10" : "h-8 w-8 border border-cream/30"
+            label ? "tone-accent h-24 w-24 bg-wine" : hot ? "h-12 w-12 border border-accent bg-wine/10" : "h-8 w-8 border border-cream/30"
           }`}
         >
           <span className={`max-w-[4.5rem] transition-opacity duration-200 ${label ? "opacity-100" : "opacity-0"}`}>{label}</span>
