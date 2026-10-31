@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+/* Paleta do layout de referência (Casa Interior): preto, creme e vinho, com o caramelo dos projetos da Tainá. */
+@theme inline {
+  --color-night: #000000;
+  --color-coal: #161412;
+  --color-cream: #e1e0cc;
+  --color-wine: #450204;
+  --color-sand: #c9a77c;
+  --font-sans: var(--font-host), "Host Grotesk", system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-night);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+}
+
+section[id] {
+  scroll-margin-top: 4.5rem;
+}
+
+@media (pointer: fine) {
+  html.lenis,
+  html.lenis body,
+  html.lenis a,
+  html.lenis button,
+  html.lenis select,
+  html.lenis input,
+  html.lenis textarea {
+    cursor: none;
+  }
+}
+
+@layer components {
+  /* nome gigante que ocupa a largura do container */
+  .giant {
+    font-size: clamp(2.4rem, 9.2vw, 9.4rem);
+    line-height: 0.82;
+    font-weight: 500;
+    letter-spacing: -0.06em;
+  }
+  .t-h1 {
+    font-size: clamp(2rem, 3.6vw, 3.1rem);
+    line-height: 1.04;
+    font-weight: 400;
+    letter-spacing: -0.04em;
+  }
+  .eyebrow {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition:
+      background-color 0.3s,
+      color 0.3s,
+      transform 0.3s;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes kenburns {
+  from {
+    transform: scale(1.12);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes riseIn {
+  from {
+    transform: translateY(110%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes nudge {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
