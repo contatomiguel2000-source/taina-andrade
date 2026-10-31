@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { expertise, faq, nav, philosophy, projects, steps, studio, testimonials, videos, whatsappLink } from "@/lib/data";
 import { asset } from "@/lib/base-path";
 import { wrap } from "@/lib/ui";
-import { IconArrow, IconInstagram, IconPlus, IconRight, IconStar, IconWhatsapp } from "./Icons";
+import { IconInstagram, IconPlus, IconRight, IconStar, IconWhatsapp } from "./Icons";
 import { Magnetic, RevealImage } from "./FX";
 import { useHistoryLayer } from "./Nav";
 import { ArchScene, HeroScene, RingScene, useWebGL } from "./Three";
@@ -242,104 +242,181 @@ export function Statement() {
   );
 }
 
-/* ---------- projetos: anel 3D + lista ---------- */
+/* ---------- projetos: anel 3D grande + galeria grande do projeto da frente ---------- */
+type Media = { type: "img"; src: string } | { type: "video"; slug: string };
+const mediaOf = (p: (typeof projects)[number]): Media[] => [...p.gallery.map((src) => ({ type: "img" as const, src })), ...(p.videos ?? []).map((slug) => ({ type: "video" as const, slug }))];
+
 export function Projects() {
   const gl = useWebGL();
-  const [open, setOpen] = useState<number | null>(null);
+  const [open, setOpen] = useState<{ p: number; m: number } | null>(null);
   const [front, setFront] = useState(0);
   const rot = useRef(0);
-  const drag = useRef<{ x: number; r: number } | null>(null);
-  const [secRef, p] = useScrollProgress<HTMLDivElement>();
+  const drag = useRef<{ x: number; r: number; moved: boolean } | null>(null);
   const n = projects.length;
   const step = (Math.PI * 2) / n;
-  // a rolagem gira o anel (somada ao arrastar)
-  const scrollRot = useRef(0);
-  useEffect(() => {
-    const base = rot.current - scrollRot.current;
-    scrollRot.current = -p * Math.PI * 1.2;
-    rot.current = base + scrollRot.current;
-  }, [p]);
   const goTo = (i: number) => {
     const target = -i * step;
-    const cur = rot.current;
-    const k = Math.round((cur - target) / (Math.PI * 2));
+    const k = Math.round((rot.current - target) / (Math.PI * 2));
     rot.current = target + k * Math.PI * 2;
+    setFront(i);
   };
   const pr = projects[front];
   return (
-    <div ref={secRef}>
-      <div className="grid gap-8 md:grid-cols-[1fr_17rem] md:items-end">
+    <div>
+      <div className="grid gap-6 md:grid-cols-[1fr_19rem] md:items-end">
         <div>
           <p className="eyebrow text-cream/75">Projetos selecionados*</p>
           <h2 className="t-h1 mt-4">Espaços com histórias para contar.</h2>
         </div>
-        <p className="text-[0.95rem] text-cream/75">{n} projetos residenciais, comerciais e de mostra. Arraste o anel, role a página ou escolha na lista.</p>
+        <p className="text-[0.95rem] text-cream/80">Gire o anel (arraste ou use as setas) e veja as fotos e os vídeos de cada projeto logo abaixo, em tamanho grande.</p>
       </div>
 
-      {gl ? (
+      {gl && (
         <div
-          className="relative mt-8 h-[52vh] min-h-[340px] cursor-grab touch-pan-y select-none active:cursor-grabbing md:h-[64vh]"
+          className="relative mt-6 h-[42vh] min-h-[280px] cursor-grab touch-pan-y select-none active:cursor-grabbing md:h-[72vh] md:min-h-[520px]"
           data-cursor="Arraste"
-          onPointerDown={(e) => (drag.current = { x: e.clientX, r: rot.current })}
+          onPointerDown={(e) => (drag.current = { x: e.clientX, r: rot.current, moved: false })}
           onPointerMove={(e) => {
             if (!drag.current) return;
-            rot.current = drag.current.r + (e.clientX - drag.current.x) * 0.006;
+            const dx = e.clientX - drag.current.x;
+            if (Math.abs(dx) > 4) drag.current.moved = true;
+            rot.current = drag.current.r + dx * 0.004;
           }}
-          onPointerUp={() => (drag.current = null)}
-          onPointerLeave={() => (drag.current = null)}
+          onPointerUp={() => {
+            // ao soltar, encaixa no projeto mais próximo
+            if (drag.current?.moved) rot.current = Math.round(rot.current / step) * step;
+            drag.current = null;
+          }}
+          onPointerLeave={() => {
+            if (drag.current?.moved) rot.current = Math.round(rot.current / step) * step;
+            drag.current = null;
+          }}
         >
-          <RingScene items={projects} rot={rot} onSelect={setOpen} onFront={setFront} />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center text-center">
-            <p key={pr.slug} className="animate-[fadeUp_0.6s_both] text-[clamp(1.4rem,2.6vw,2.1rem)] tracking-[-0.03em]">
-              {pr.title}
-            </p>
-            <p className="text-[0.85rem] text-cream/70">
+          <RingScene items={projects} rot={rot} onSelect={(i) => (i === front ? setOpen({ p: i, m: 0 }) : goTo(i))} onFront={setFront} />
+        </div>
+      )}
+
+      {/* controles do anel */}
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-y border-cream/15 py-4">
+        <div className="flex items-center gap-3">
+          <button type="button" onClick={() => goTo((front - 1 + n) % n)} className="flex h-11 w-11 rotate-180 items-center justify-center rounded-full border border-cream/30 hover:bg-cream hover:text-night" aria-label="Projeto anterior">
+            <IconRight />
+          </button>
+          <button type="button" onClick={() => goTo((front + 1) % n)} className="flex h-11 w-11 items-center justify-center rounded-full border border-cream/30 hover:bg-cream hover:text-night" aria-label="Próximo projeto">
+            <IconRight />
+          </button>
+          <div key={pr.slug} className="ml-2 animate-[fadeUp_0.5s_both]">
+            <p className="text-[clamp(1.3rem,2.2vw,1.8rem)] leading-tight tracking-[-0.03em]">{pr.title}</p>
+            <p className="text-[0.85rem] text-cream/75">
               {pr.kind} | {pr.place} | {pr.year}
             </p>
-            <button type="button" onClick={() => setOpen(front)} className="pill pointer-events-auto mt-3 gap-2 bg-cream text-night">
-              Ver projeto <IconArrow className="h-4 w-4" />
-            </button>
           </div>
         </div>
-      ) : null}
+        <span className="text-[0.85rem] tabular-nums text-cream/75">
+          {String(front + 1).padStart(2, "0")} / {String(n).padStart(2, "0")}
+        </span>
+      </div>
 
-      {/* lista: sempre presente (acessível e para quem não tem WebGL) */}
-      <div className="mt-10 grid gap-x-8 md:grid-cols-2">
+      <ProjectStrip key={pr.slug} index={front} onOpen={(m) => setOpen({ p: front, m })} />
+
+      {/* todos os projetos */}
+      <div className="mt-12 grid grid-cols-2 gap-3 md:grid-cols-6">
         {projects.map((x, i) => (
-          <button
-            key={x.slug}
-            type="button"
-            onMouseEnter={() => gl && goTo(i)}
-            onFocus={() => gl && goTo(i)}
-            onClick={() => setOpen(i)}
-            className={`group flex items-center gap-4 border-b border-cream/15 py-3 text-left transition-colors ${i === front && gl ? "text-cream" : "text-cream/70 hover:text-cream"}`}
-          >
-            <span className="relative h-12 w-16 shrink-0 overflow-hidden rounded-[6px]">
-              <Image src={asset(x.cover)} alt="" fill quality={70} sizes="64px" className="object-cover transition-transform duration-500 group-hover:scale-110" />
+          <button key={x.slug} type="button" onClick={() => goTo(i)} className={`group text-left transition-opacity ${i === front ? "opacity-100" : "opacity-70 hover:opacity-100"}`} aria-pressed={i === front}>
+            <span className={`relative block aspect-[3/2] overflow-hidden rounded-[8px] ring-2 transition-all ${i === front ? "ring-cream" : "ring-transparent"}`}>
+              <Image src={asset(x.cover)} alt="" fill quality={80} sizes="(min-width: 768px) 190px, 50vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
             </span>
-            <span className="flex-1">
-              <span className="block text-[1.05rem] tracking-[-0.02em]">{x.title}</span>
-              <span className="block text-[0.8rem] text-cream/75">
-                {x.kind} | {x.year}
-              </span>
-            </span>
-            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-cream/25 transition-all duration-500 group-hover:rotate-[-45deg] group-hover:bg-cream group-hover:text-night">
-              <IconRight />
-            </span>
+            <span className="mt-1.5 block text-[0.85rem] leading-tight">{x.title}</span>
           </button>
         ))}
       </div>
 
-      {open !== null && <ProjectModal index={open} setIndex={setOpen} />}
+      {open && <ProjectModal index={open.p} start={open.m} setOpen={setOpen} />}
     </div>
   );
 }
 
-function ProjectModal({ index, setIndex }: { index: number; setIndex: (v: number | null) => void }) {
+/** Fotos e vídeos do projeto em faixa grande, arrastável, com setas. */
+function ProjectStrip({ index, onOpen }: { index: number; onOpen: (m: number) => void }) {
   const pr = projects[index];
-  const [img, setImg] = useState(0);
-  const close = useCallback(() => setIndex(null), [setIndex]);
-  const go = useCallback((d: number) => setImg((v) => (v + d + pr.gallery.length) % pr.gallery.length), [pr.gallery.length]);
+  const media = mediaOf(pr);
+  const track = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null);
+  const [pos, setPos] = useState(0);
+  const scroll = (d: number) => track.current?.scrollBy({ left: d * track.current.clientWidth * 0.8, behavior: "smooth" });
+  return (
+    <div className="mt-6">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+        <p className="max-w-[40rem] text-[0.98rem] leading-relaxed text-cream/85">{pr.text}</p>
+        <div className="flex items-center gap-2">
+          <span className="mr-2 text-[0.82rem] text-cream/75">
+            {pr.gallery.length} fotos{pr.videos?.length ? ` · ${pr.videos.length} ${pr.videos.length > 1 ? "vídeos" : "vídeo"}` : ""}
+          </span>
+          <button type="button" onClick={() => scroll(-1)} className="flex h-10 w-10 rotate-180 items-center justify-center rounded-full bg-cream text-night" aria-label="Voltar fotos">
+            <IconRight />
+          </button>
+          <button type="button" onClick={() => scroll(1)} className="flex h-10 w-10 items-center justify-center rounded-full bg-cream text-night" aria-label="Avançar fotos">
+            <IconRight />
+          </button>
+        </div>
+      </div>
+      <div
+        ref={track}
+        data-cursor="Arraste"
+        className="no-scrollbar -mx-4 flex items-start snap-x snap-mandatory gap-3 overflow-x-auto px-4 md:mx-0 md:snap-none md:px-0"
+        onScroll={(e) => {
+          const el = e.currentTarget;
+          setPos(el.scrollLeft / Math.max(1, el.scrollWidth - el.clientWidth));
+        }}
+        onPointerDown={(e) => {
+          if (e.pointerType !== "mouse" || !track.current) return;
+          drag.current = { x: e.clientX, left: track.current.scrollLeft, moved: false };
+        }}
+        onPointerMove={(e) => {
+          if (!drag.current || !track.current) return;
+          const dx = e.clientX - drag.current.x;
+          if (Math.abs(dx) > 4) drag.current.moved = true;
+          track.current.scrollLeft = drag.current.left - dx;
+        }}
+        onPointerUp={() => setTimeout(() => (drag.current = null), 0)}
+        onPointerLeave={() => (drag.current = null)}
+      >
+        {media.map((m, i) =>
+          m.type === "img" ? (
+            <button
+              key={m.src}
+              type="button"
+              onClick={() => !drag.current?.moved && onOpen(i)}
+              className="group relative h-[72vw] w-[88vw] shrink-0 snap-center overflow-hidden rounded-[12px] animate-[fadeUp_0.6s_both] md:h-[64vh] md:max-h-[40rem] md:min-h-[18rem] md:w-auto"
+              style={{ animationDelay: `${i * 60}ms` }}
+              aria-label={`Ampliar foto ${i + 1} de ${pr.title}`}
+            >
+              <Image src={asset(m.src)} alt={`${pr.title}: foto ${i + 1}`} width={2400} height={1600} unoptimized draggable={false} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03] md:w-auto md:max-w-none" />
+              <span className="absolute bottom-3 right-3 rounded-full bg-espresso/70 px-3 py-1 text-[0.75rem] text-linen opacity-0 backdrop-blur transition-opacity group-hover:opacity-100">Ampliar ⤢</span>
+            </button>
+          ) : (
+            <div key={m.slug} className="relative h-[72vw] w-[40.5vw] shrink-0 snap-center overflow-hidden rounded-[12px] bg-espresso md:aspect-auto md:h-[64vh] md:max-h-[40rem] md:min-h-[18rem] md:w-auto">
+              <video className="h-full w-full object-cover md:w-auto" src={asset(`/video/${m.slug}.mp4`)} poster={asset(`/img/${m.slug === "filme-memorias" ? "memorias-1" : `reel-${m.slug}`}.webp`)} controls playsInline preload="none" />
+              <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-espresso/70 px-3 py-1 text-[0.75rem] text-linen backdrop-blur">Vídeo</span>
+            </div>
+          ),
+        )}
+      </div>
+      <div className="mt-3 h-[2px] overflow-hidden bg-cream/15">
+        <div className="h-full origin-left bg-cream transition-transform duration-200" style={{ transform: `scaleX(${Math.max(0.06, pos)})` }} />
+      </div>
+    </div>
+  );
+}
+
+/** Visualizador em tela cheia: fotos e vídeos do projeto, informações recolhíveis. */
+function ProjectModal({ index, start, setOpen }: { index: number; start: number; setOpen: (v: { p: number; m: number } | null) => void }) {
+  const pr = projects[index];
+  const media = mediaOf(pr);
+  const [img, setImg] = useState(Math.min(start, media.length - 1));
+  const [info, setInfo] = useState(false);
+  const close = useCallback(() => setOpen(null), [setOpen]);
+  const go = useCallback((d: number) => setImg((v) => (v + d + media.length) % media.length), [media.length]);
   const keys = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") go(1);
@@ -349,73 +426,67 @@ function ProjectModal({ index, setIndex }: { index: number; setIndex: (v: number
   );
   useLayer(true, close, keys);
   const swipe = useRef<number | null>(null);
+  const cur = media[img];
   return (
-    <div className="tone-dark fixed inset-0 z-[70] grid animate-[fadeUp_0.5s_cubic-bezier(0.16,1,0.3,1)_both] bg-night text-cream md:grid-cols-[1fr_24rem]" role="dialog" aria-modal="true" aria-label={pr.title}>
-      <div
-        className="relative min-h-[52svh] touch-pan-y [perspective:1600px]"
-        onPointerDown={(e) => (swipe.current = e.clientX)}
-        onPointerUp={(e) => {
-          if (swipe.current === null) return;
-          const dx = e.clientX - swipe.current;
-          swipe.current = null;
-          if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
-        }}
-      >
-        {pr.gallery.map((src, k) => (
-          <div key={src} className="absolute inset-3 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:inset-8" style={{ opacity: k === img ? 1 : 0, transform: k === img ? "none" : `rotateY(${k < img ? 25 : -25}deg) scale(0.92)` }}>
-            <Image src={asset(src)} alt={`${pr.title}: foto ${k + 1}`} fill unoptimized sizes="100vw" className="object-contain" />
-          </div>
-        ))}
-        <div className="absolute inset-x-0 bottom-4 flex items-center justify-center gap-3">
-          <button type="button" onClick={() => go(-1)} className="flex h-11 w-11 rotate-180 items-center justify-center rounded-full border border-cream/25 hover:bg-cream hover:text-night" aria-label="Foto anterior">
-            <IconRight />
-          </button>
-          <span className="w-16 text-center text-[0.8rem] tabular-nums text-cream/80">
-            {String(img + 1).padStart(2, "0")} / {String(pr.gallery.length).padStart(2, "0")}
-          </span>
-          <button type="button" onClick={() => go(1)} className="flex h-11 w-11 items-center justify-center rounded-full border border-cream/25 hover:bg-cream hover:text-night" aria-label="Próxima foto">
-            <IconRight />
-          </button>
-        </div>
-      </div>
-      <aside className="flex flex-col overflow-y-auto border-cream/10 bg-coal p-6 md:border-l md:p-8">
-        <div className="flex items-center justify-between">
-          <CloseButton onClick={close} />
-          <span className="text-[0.75rem] text-cream/75">Esc ou voltar do celular</span>
-        </div>
-        <p className="eyebrow mt-8 text-cream/75">
-          {pr.kind} | {pr.year}
+    <div className="tone-dark fixed inset-0 z-[70] flex animate-[fadeUp_0.4s_cubic-bezier(0.16,1,0.3,1)_both] flex-col bg-night text-cream" role="dialog" aria-modal="true" aria-label={pr.title}>
+      <div className="flex items-center justify-between gap-3 p-3 md:p-4">
+        <CloseButton onClick={close} />
+        <p className="truncate text-[0.95rem]">
+          {pr.title} <span className="text-cream/70">· {String(img + 1).padStart(2, "0")}/{String(media.length).padStart(2, "0")}</span>
         </p>
-        <h3 className="mt-2 text-[2.1rem] leading-[1.02] tracking-[-0.04em]">{pr.title}</h3>
-        <p className="mt-1 text-cream/80">{pr.place}</p>
-        <p className="mt-6 leading-relaxed text-cream/85">{pr.text}</p>
-        {pr.facts && (
-          <ul className="mt-5 space-y-1.5 border-t border-cream/15 pt-5 text-[0.95rem]">
-            {pr.facts.map((f) => (
-              <li key={f} className="flex gap-2">
-                <span className="text-sand">✦</span>
-                {f}
-              </li>
-            ))}
-          </ul>
+        <button type="button" onClick={() => setInfo((v) => !v)} className="pill border border-cream/25 hover:bg-cream hover:text-night" aria-expanded={info}>
+          {info ? "Fechar info" : "Sobre o projeto"}
+        </button>
+      </div>
+      <div className="relative flex-1 touch-pan-y" onPointerDown={(e) => (swipe.current = e.clientX)} onPointerUp={(e) => {
+        if (swipe.current === null) return;
+        const dx = e.clientX - swipe.current;
+        swipe.current = null;
+        if (Math.abs(dx) > 50 && cur.type === "img") go(dx < 0 ? 1 : -1);
+      }}>
+        {cur.type === "img" ? (
+          <div key={cur.src} className="absolute inset-0 animate-[fadeUp_0.45s_both]">
+            <Image src={asset(cur.src)} alt={`${pr.title}: foto ${img + 1}`} fill unoptimized sizes="100vw" className="object-contain" />
+          </div>
+        ) : (
+          <video key={cur.slug} className="absolute inset-0 m-auto max-h-full max-w-full animate-[fadeUp_0.45s_both]" src={asset(`/video/${cur.slug}.mp4`)} poster={asset(`/img/${cur.slug === "filme-memorias" ? "memorias-1" : `reel-${cur.slug}`}.webp`)} autoPlay controls playsInline />
         )}
-        {pr.credit && <p className="mt-4 text-[0.82rem] text-cream/75">{pr.credit}</p>}
-        <div className="mt-auto grid grid-cols-4 gap-2 pt-8">
-          {pr.gallery.map((src, k) => (
-            <button key={src} type="button" onClick={() => setImg(k)} className={`relative aspect-square overflow-hidden rounded-[6px] transition-opacity ${k === img ? "opacity-100 ring-2 ring-cream" : "opacity-45 hover:opacity-90"}`} aria-label={`Ver foto ${k + 1}`}>
-              <Image src={asset(src)} alt="" fill quality={70} sizes="90px" className="object-cover" />
-            </button>
-          ))}
-        </div>
-        <div className="mt-6 flex gap-2">
-          <button type="button" onClick={() => setIndex((index - 1 + projects.length) % projects.length)} className="pill flex-1 justify-center border border-cream/20 hover:bg-cream hover:text-night">
-            ← Anterior
+        <button type="button" onClick={() => go(-1)} className="absolute left-3 top-1/2 flex h-12 w-12 -translate-y-1/2 rotate-180 items-center justify-center rounded-full border border-cream/40 bg-espresso/70 backdrop-blur hover:bg-cream hover:text-night" aria-label="Anterior">
+          <IconRight />
+        </button>
+        <button type="button" onClick={() => go(1)} className="absolute right-3 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-cream/40 bg-espresso/70 backdrop-blur hover:bg-cream hover:text-night" aria-label="Próximo">
+          <IconRight />
+        </button>
+        {/* informações por cima, recolhíveis */}
+        <aside className={`absolute bottom-0 right-0 top-0 w-full max-w-[24rem] overflow-y-auto bg-coal/95 p-6 backdrop-blur transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${info ? "translate-x-0" : "translate-x-full"}`} aria-hidden={!info}>
+          <p className="eyebrow text-cream/75">
+            {pr.kind} | {pr.year}
+          </p>
+          <h3 className="mt-2 text-[2rem] leading-[1.02] tracking-[-0.04em]">{pr.title}</h3>
+          <p className="mt-1 text-cream/80">{pr.place}</p>
+          <p className="mt-5 leading-relaxed text-cream/90">{pr.text}</p>
+          {pr.facts && (
+            <ul className="mt-5 space-y-1.5 border-t border-cream/15 pt-5 text-[0.95rem]">
+              {pr.facts.map((f) => (
+                <li key={f} className="flex gap-2">
+                  <span className="text-sand">✦</span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+          )}
+          {pr.credit && <p className="mt-4 text-[0.82rem] text-cream/75">{pr.credit}</p>}
+        </aside>
+      </div>
+      {/* miniaturas */}
+      <div className="no-scrollbar flex gap-2 overflow-x-auto p-3 md:justify-center md:p-4">
+        {media.map((m, k) => (
+          <button key={k} type="button" onClick={() => setImg(k)} className={`relative h-14 w-20 shrink-0 overflow-hidden rounded-[6px] transition-opacity ${k === img ? "opacity-100 ring-2 ring-cream" : "opacity-50 hover:opacity-90"}`} aria-label={m.type === "img" ? `Foto ${k + 1}` : "Vídeo"}>
+            <Image src={asset(m.type === "img" ? m.src : `/img/${m.slug === "filme-memorias" ? "memorias-1" : `reel-${m.slug}`}.webp`)} alt="" fill quality={60} sizes="80px" className="object-cover" />
+            {m.type === "video" && <span className="absolute inset-0 flex items-center justify-center bg-espresso/40 text-linen">▶</span>}
           </button>
-          <button type="button" onClick={() => setIndex((index + 1) % projects.length)} className="pill flex-1 justify-center border border-cream/20 hover:bg-cream hover:text-night">
-            Próximo →
-          </button>
-        </div>
-      </aside>
+        ))}
+      </div>
     </div>
   );
 }

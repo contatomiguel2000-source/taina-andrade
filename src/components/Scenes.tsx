@@ -9,7 +9,7 @@
 */
 
 import { Image as Photo3D, Float } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { asset } from "@/lib/base-path";
@@ -148,23 +148,66 @@ export function HeroScene({ images }: { images: string[] }) {
 
 type RingProject = { slug: string; tex: string; title: string };
 
+/** Foto do anel com textura nítida (filtro anisotrópico) e brilho cheio na da frente. */
+function RingPhoto({ url, w, h, front, hover, onOver, onOut, onClick }: { url: string; w: number; h: number; front: boolean; hover: boolean; onOver: () => void; onOut: () => void; onClick: () => void }) {
+  const ref = useRef<THREE.Mesh>(null);
+  const { gl } = useThree();
+  useEffect(() => {
+    const m = ref.current?.material as unknown as { map?: THREE.Texture } | undefined;
+    if (m?.map) {
+      m.map.anisotropy = gl.capabilities.getMaxAnisotropy();
+      m.map.needsUpdate = true;
+    }
+  });
+  const k = hover && !front ? 1.04 : 1;
+  return (
+    <Photo3D
+      ref={ref}
+      url={url}
+      scale={[w * k, h * k]}
+      radius={0.04}
+      toneMapped={false}
+      grayscale={front || hover ? 0 : 0.45} // as de trás ficam mais apagadas; a da frente, com cor total
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        onOver();
+      }}
+      onPointerOut={onOut}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+    />
+  );
+}
+
 function Ring({ items, rot, onSelect, onFront }: { items: RingProject[]; rot: React.RefObject<number>; onSelect: (i: number) => void; onFront: (i: number) => void }) {
   const group = useRef<THREE.Group>(null);
   const n = items.length;
-  const R = 5.2;
-  const last = useRef(-1);
+  const { viewport, camera } = useThree();
+  // tamanho da foto: ocupa a maior parte da tela na frente (3:2), menor no celular (tela estreita)
+  const aspect = viewport.aspect;
+  const W = aspect < 1 ? 3.3 : 5.4;
+  const H = W / 1.5;
+  const R = aspect < 1 ? 7.4 : 10.5;
+  const [front, setFront] = useState(0);
   const [hover, setHover] = useState<number | null>(null);
+  const last = useRef(-1);
+  useEffect(() => {
+    // câmera a uma distância que deixa a foto da frente grande e inteira
+    camera.position.set(0, 0.15, R + (aspect < 1 ? 6.2 : 6.6));
+    camera.lookAt(0, 0, 0);
+  }, [camera, R, aspect]);
   useFrame((state, dt) => {
     if (!group.current) return;
-    const target = rot.current ?? 0;
-    group.current.rotation.y = THREE.MathUtils.damp(group.current.rotation.y, target, 4, dt);
-    group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, reduced() ? 0 : state.pointer.y * 0.08, 3, dt);
-    // qual projeto está de frente
-    const a = (((-group.current.rotation.y / (Math.PI * 2)) * n) % n + n) % n;
-    const front = Math.round(a) % n;
-    if (front !== last.current) {
-      last.current = front;
-      onFront(front);
+    group.current.rotation.y = THREE.MathUtils.damp(group.current.rotation.y, rot.current ?? 0, 4, dt);
+    group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, reduced() ? 0 : state.pointer.y * 0.05, 3, dt);
+    const a = ((((-group.current.rotation.y / (Math.PI * 2)) * n) % n) + n) % n;
+    const f = Math.round(a) % n;
+    if (f !== last.current) {
+      last.current = f;
+      setFront(f);
+      onFront(f);
     }
   });
   return (
@@ -173,24 +216,15 @@ function Ring({ items, rot, onSelect, onFront }: { items: RingProject[]; rot: Re
         const ang = (i / n) * Math.PI * 2;
         return (
           <group key={it.slug} position={[Math.sin(ang) * R, 0, Math.cos(ang) * R]} rotation={[0, ang, 0]}>
-            <Photo3D
+            <RingPhoto
               url={asset(it.tex)}
-              scale={hover === i ? [2.75, 1.85] : [2.5, 1.68]}
-              radius={0.05}
-              toneMapped={false}
-              onPointerOver={(e) => {
-                e.stopPropagation();
-                setHover(i);
-                document.body.dataset.ringHover = "1";
-              }}
-              onPointerOut={() => {
-                setHover(null);
-                delete document.body.dataset.ringHover;
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelect(i);
-              }}
+              w={W}
+              h={H}
+              front={i === front}
+              hover={hover === i}
+              onOver={() => setHover(i)}
+              onOut={() => setHover(null)}
+              onClick={() => onSelect(i)}
             />
           </group>
         );
@@ -203,8 +237,8 @@ export function RingScene({ items, onSelect, onFront, rot }: { items: RingProjec
   const [wrap, vis] = useVisible<HTMLDivElement>();
   return (
     <div ref={wrap} className="absolute inset-0">
-      <Canvas frameloop={vis ? "always" : "never"} dpr={[1, 1.75]} camera={{ position: [0, 0.6, 10.5], fov: 42 }} gl={{ antialias: true, alpha: true }}>
-        <fog attach="fog" args={["#1d1815", 9, 17]} />
+      <Canvas frameloop={vis ? "always" : "never"} dpr={[1, 2]} camera={{ position: [0, 0.15, 17], fov: 36 }} gl={{ antialias: true, alpha: true }}>
+        <fog attach="fog" args={["#1d1815", 12, 30]} />
         <Ring items={items} rot={rot} onSelect={onSelect} onFront={onFront} />
       </Canvas>
     </div>
