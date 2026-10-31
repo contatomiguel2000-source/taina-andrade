@@ -119,13 +119,13 @@ export function Header() {
     <>
       <header className={`tone-dark fixed inset-x-0 top-0 z-50 bg-transparent transition-transform duration-500 ${hidden && !open ? "-translate-y-full" : ""}`}>
         <div className={`${wrap} flex h-[4.5rem] items-center justify-between`}>
-          <a href="#inicio" data-no-back onClick={close} className="pill gap-2.5 bg-night/80 py-1.5 pl-2 text-[0.8rem] font-medium tracking-[0.04em] text-cream backdrop-blur-md">
+          <a href="#inicio" data-no-back onClick={close} className="pill gap-2.5 bg-night/95 py-1.5 pl-2 text-[0.8rem] font-medium tracking-[0.04em] text-cream">
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-linen">
               <Image src={asset("/img/logo-grafite.png")} alt="" width={12} height={14} unoptimized className="h-3.5 w-auto" />
             </span>
             TAINÁ ANDRADE
           </a>
-          <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="pill gap-3 bg-night/80 text-[0.8rem] text-cream backdrop-blur-md">
+          <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="pill gap-3 bg-night/95 text-[0.8rem] text-cream">
             {open ? "Fechar" : "Menu"}
             <span className="flex w-4 flex-col gap-[4px]">
               <span className={`h-px w-4 bg-current transition-transform ${open ? "translate-y-[2.5px] rotate-45" : ""}`} />
@@ -173,7 +173,8 @@ export function Hero() {
     let raf = 0;
     const on = () => {
       cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => setY(window.scrollY));
+      // depois que o topo sai da tela o valor para de mudar e o React não redesenha mais
+      raf = requestAnimationFrame(() => setY(Math.min(window.scrollY, Math.round(window.innerHeight * 1.2))));
     };
     window.addEventListener("scroll", on, { passive: true });
     return () => window.removeEventListener("scroll", on);
@@ -184,7 +185,7 @@ export function Hero() {
       <div className="tone-dark relative h-full overflow-hidden rounded-[18px] bg-espresso">
         {/* sem WebGL: a foto do living em tela cheia */}
         <div className={`absolute inset-0 transition-opacity duration-1000 ${gl ? "opacity-30" : "opacity-100"}`}>
-          <Image src={asset("/img/altiplano-living-0.webp")} alt="Living social do Apartamento Altiplano, projeto de Tainá Andrade" fill priority unoptimized sizes="100vw" className="animate-[kenburns_3s_cubic-bezier(0.16,1,0.3,1)_both] object-cover" />
+          <Image src={asset("/img/altiplano-living-0.webp")} alt="Living social do Apartamento Altiplano, projeto de Tainá Andrade" fill priority quality={85} sizes="100vw" className="animate-[kenburns_3s_cubic-bezier(0.16,1,0.3,1)_both] object-cover" />
         </div>
         {gl && <HeroScene images={heroImgs} />}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-espresso via-espresso/20 to-espresso/50" />
@@ -391,7 +392,7 @@ function ProjectStrip({ index, onOpen }: { index: number; onOpen: (m: number) =>
               style={{ animationDelay: `${i * 60}ms` }}
               aria-label={`Ampliar foto ${i + 1} de ${pr.title}`}
             >
-              <Image src={asset(m.src)} alt={`${pr.title}: foto ${i + 1}`} width={2400} height={1600} unoptimized draggable={false} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03] md:w-auto md:max-w-none" />
+              <Image src={asset(m.src)} alt={`${pr.title}: foto ${i + 1}`} width={2400} height={1600} quality={90} sizes="(min-width: 768px) 1100px, 90vw" draggable={false} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03] md:w-auto md:max-w-none" />
               <span className="absolute bottom-3 right-3 rounded-full bg-espresso/70 px-3 py-1 text-[0.75rem] text-linen opacity-0 backdrop-blur transition-opacity group-hover:opacity-100">Ampliar ⤢</span>
             </button>
           ) : (
@@ -681,9 +682,20 @@ export function Videos() {
   const n = videos.length;
   const go = (d: number) => setActive((v) => (v + d + n) % n);
   const v = videos.find((x) => x.slug === open);
+  // o vídeo da frente só toca (e só baixa) enquanto o leque está na tela
+  const fan = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = fan.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold: 0.25 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   return (
     <>
       <div
+        ref={fan}
         className="relative h-[30rem] touch-pan-y select-none [perspective:1600px] md:h-[34rem]"
         onPointerDown={(e) => (start.current = e.clientX)}
         onPointerUp={(e) => {
@@ -701,7 +713,7 @@ export function Videos() {
           const ad = Math.abs(d);
           const isActive = d === 0;
           return (
-            <VideoCard key={x.slug} x={x} active={isActive} onClick={() => (isActive ? setOpen(x.slug) : setActive(i))} style={{ transform: `translateX(calc(-50% + ${d * 62}%)) translateZ(${-ad * 140}px) rotateY(${d * -22}deg)`, zIndex: 10 - ad, opacity: ad > 2 ? 0 : 1 - ad * 0.22 }} />
+            <VideoCard key={x.slug} x={x} active={isActive} playing={isActive && inView} onClick={() => (isActive ? setOpen(x.slug) : setActive(i))} style={{ transform: `translateX(calc(-50% + ${d * 62}%)) translateZ(${-ad * 140}px) rotateY(${d * -22}deg)`, zIndex: 10 - ad, opacity: ad > 2 ? 0 : 1 - ad * 0.22 }} />
           );
         })}
       </div>
@@ -734,14 +746,14 @@ export function Videos() {
   );
 }
 
-function VideoCard({ x, active, onClick, style }: { x: (typeof videos)[number]; active: boolean; onClick: () => void; style: React.CSSProperties }) {
+function VideoCard({ x, active, playing, onClick, style }: { x: (typeof videos)[number]; active: boolean; playing: boolean; onClick: () => void; style: React.CSSProperties }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (active && !reduced()) el.play().catch(() => {});
+    if (playing && !reduced()) el.play().catch(() => {});
     else el.pause();
-  }, [active]);
+  }, [playing]);
   return (
     <button type="button" onClick={onClick} className="absolute left-1/2 top-0 aspect-[9/16] h-full overflow-hidden rounded-[16px] bg-coal shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" style={style} aria-label={active ? `Assistir: ${x.title}` : `Mostrar: ${x.title}`}>
       <video ref={ref} className="h-full w-full object-cover" src={asset(`/video/${x.slug}-preview.mp4`)} poster={asset(`/img/reel-${x.slug}.webp`)} muted loop playsInline preload="none" />

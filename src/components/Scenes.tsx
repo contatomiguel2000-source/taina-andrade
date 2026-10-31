@@ -26,15 +26,32 @@ const reduced = () => typeof window !== "undefined" && window.matchMedia("(prefe
 function useVisible<T extends HTMLElement>() {
   const ref = useRef<T>(null);
   const [vis, setVis] = useState(false);
+  const [near, setNear] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const io = new IntersectionObserver(([e]) => setVis(e.isIntersecting), { rootMargin: "100px" });
+    // "near": monta a cena um pouco antes de aparecer (e não desmonta mais)
+    const pre = new IntersectionObserver(([e]) => e.isIntersecting && (setNear(true), pre.disconnect()), { rootMargin: "600px 0px" });
+    // "vis": só renderiza quadros enquanto está na tela
+    const io = new IntersectionObserver(([e]) => setVis(e.isIntersecting), { rootMargin: "50px 0px" });
+    pre.observe(el);
     io.observe(el);
-    return () => io.disconnect();
+    return () => {
+      pre.disconnect();
+      io.disconnect();
+    };
   }, []);
-  return [ref, vis] as const;
+  return [ref, vis, near] as const;
 }
+
+/** Densidade de pixels: limitada (o maior custo do 3D) e menor em aparelhos fracos. */
+const lowPower = () => {
+  if (typeof navigator === "undefined") return false;
+  const n = navigator as Navigator & { deviceMemory?: number };
+  return (n.hardwareConcurrency ?? 8) <= 4 || (n.deviceMemory ?? 8) <= 4 || window.innerWidth < 768;
+};
+const DPR: [number, number] = [1, 1.5];
+const DPR_LOW: [number, number] = [1, 1.15];
 
 /* =================== TOPO =================== */
 
@@ -92,7 +109,7 @@ function Dust() {
   const ref = useRef<THREE.Points>(null);
   const geo = useMemo(() => {
     const g = new THREE.BufferGeometry();
-    const n = 260;
+    const n = 140;
     const rnd = seeded(42);
     const p = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) {
@@ -114,7 +131,7 @@ function Dust() {
 }
 
 export function HeroScene({ images }: { images: string[] }) {
-  const [wrap, vis] = useVisible<HTMLDivElement>();
+  const [wrap, vis, near] = useVisible<HTMLDivElement>();
   const scroll = useRef(0);
   useEffect(() => {
     const on = () => (scroll.current = Math.min(1, window.scrollY / window.innerHeight));
@@ -135,11 +152,11 @@ export function HeroScene({ images }: { images: string[] }) {
   );
   return (
     <div ref={wrap} className="absolute inset-0">
-      <Canvas frameloop={vis ? "always" : "never"} dpr={[1, 1.75]} camera={{ position: [0, 0, 6], fov: 50 }} gl={{ antialias: true, alpha: true }}>
+      {near && <Canvas frameloop={vis ? "always" : "never"} dpr={lowPower() ? DPR_LOW : DPR} camera={{ position: [0, 0, 6], fov: 50 }} gl={{ antialias: false, alpha: true, powerPreference: "high-performance" }}>
         <fog attach="fog" args={["#1d1815", 9, 26]} />
         <HeroRig items={items} scrollRef={scroll} />
         <Dust />
-      </Canvas>
+      </Canvas>}
     </div>
   );
 }
@@ -234,13 +251,13 @@ function Ring({ items, rot, onSelect, onFront }: { items: RingProject[]; rot: Re
 }
 
 export function RingScene({ items, onSelect, onFront, rot }: { items: RingProject[]; onSelect: (i: number) => void; onFront: (i: number) => void; rot: React.RefObject<number> }) {
-  const [wrap, vis] = useVisible<HTMLDivElement>();
+  const [wrap, vis, near] = useVisible<HTMLDivElement>();
   return (
     <div ref={wrap} className="absolute inset-0">
-      <Canvas frameloop={vis ? "always" : "never"} dpr={[1, 2]} camera={{ position: [0, 0.15, 17], fov: 36 }} gl={{ antialias: true, alpha: true }}>
+      {near && <Canvas frameloop={vis ? "always" : "never"} dpr={lowPower() ? DPR_LOW : DPR} camera={{ position: [0, 0.15, 17], fov: 36 }} gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}>
         <fog attach="fog" args={["#1d1815", 12, 30]} />
         <Ring items={items} rot={rot} onSelect={onSelect} onFront={onFront} />
-      </Canvas>
+      </Canvas>}
     </div>
   );
 }
@@ -270,7 +287,7 @@ function archShape(w: number, h: number, t: number) {
 function Arches() {
   const group = useRef<THREE.Group>(null);
   const shape = useMemo(() => archShape(1.6, 2.6, 0.22), []);
-  const extrude = useMemo(() => ({ depth: 0.28, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 3, curveSegments: 48 }), []);
+  const extrude = useMemo(() => ({ depth: 0.28, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 2, curveSegments: 20 }), []);
   useFrame((state, dt) => {
     if (!group.current) return;
     const still = reduced();
@@ -281,18 +298,18 @@ function Arches() {
   return (
     <group ref={group} position={[0, -1.25, 0]}>
       {tones.map((c, i) => (
-        <mesh key={c} position={[(i - 1) * 0.55, 0, -i * 0.7]} castShadow>
+        <mesh key={c} position={[(i - 1) * 0.55, 0, -i * 0.7]}>
           <extrudeGeometry args={[shape, extrude]} />
           <meshStandardMaterial color={c} roughness={0.55} metalness={0.08} />
         </mesh>
       ))}
       <Float speed={1.4} floatIntensity={0.6} rotationIntensity={0.4}>
         <mesh position={[0.15, 1.15, 0.6]}>
-          <sphereGeometry args={[0.32, 64, 64]} />
+          <sphereGeometry args={[0.32, 32, 32]} />
           <meshStandardMaterial color="#e9dcc4" roughness={0.25} metalness={0.15} />
         </mesh>
       </Float>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
         <circleGeometry args={[3.2, 64]} />
         <meshStandardMaterial color="#1a1310" roughness={0.9} />
       </mesh>
@@ -301,16 +318,16 @@ function Arches() {
 }
 
 export function ArchScene() {
-  const [wrap, vis] = useVisible<HTMLDivElement>();
+  const [wrap, vis, near] = useVisible<HTMLDivElement>();
   return (
     <div ref={wrap} className="absolute inset-0">
-      <Canvas frameloop={vis ? "always" : "never"} shadows dpr={[1, 1.75]} camera={{ position: [0, 0.4, 5.4], fov: 40 }} gl={{ antialias: true, alpha: true }}>
+      {near && <Canvas frameloop={vis ? "always" : "never"} dpr={lowPower() ? DPR_LOW : DPR} camera={{ position: [0, 0.4, 5.4], fov: 40 }} gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}>
         <ambientLight intensity={0.35} />
-        <directionalLight position={[3, 5, 4]} intensity={2.2} color="#ffe2c2" castShadow shadow-mapSize={[1024, 1024]} />
+        <directionalLight position={[3, 5, 4]} intensity={2.2} color="#ffe2c2" />
         <pointLight position={[-3, 1, 2]} intensity={14} color="#c97b4a" />
         <pointLight position={[2, 2.5, -2]} intensity={8} color="#fff1dc" />
         <Arches />
-      </Canvas>
+      </Canvas>}
     </div>
   );
 }
