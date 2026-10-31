@@ -8,7 +8,7 @@ import { wrap } from "@/lib/ui";
 import { IconInstagram, IconPlus, IconRight, IconStar, IconWhatsapp } from "./Icons";
 import { Magnetic, RevealImage } from "./FX";
 import { useHistoryLayer } from "./Nav";
-import { ArchScene, HeroScene, RingScene, useWebGL } from "./Three";
+import { HeroScene, RingScene, useWebGL } from "./Three";
 
 /* ---------- utilitários ---------- */
 
@@ -650,18 +650,16 @@ export function Process() {
 
 /* ---------- filosofia + escultura 3D de arcos ---------- */
 export function Philosophy() {
-  const gl = useWebGL();
   const [open, setOpen] = useState(0);
   return (
     <div className="grid items-center gap-8 md:grid-cols-[1fr_1.05fr]">
-      <div className="tone-dark relative h-[24rem] overflow-hidden rounded-[18px] bg-espresso md:h-[32rem]" data-cursor="Mova">
-        {gl ? (
-          <ArchScene />
-        ) : (
-          <Image src={asset("/img/villa-b-0.webp")} alt="Aberturas em arco da Villa Mediterrânea" fill quality={88} sizes="560px" className="object-cover" />
-        )}
-        <p className="pointer-events-none absolute bottom-4 left-5 text-[0.78rem] text-cream/80">Arcos: das villas mediterrâneas às venezianas do Living de Memórias.</p>
-      </div>
+      <RevealImage className="tone-dark group relative aspect-[4/5] overflow-hidden rounded-[18px] bg-espresso md:aspect-auto md:h-[36rem]">
+        <Image src={asset("/img/taina-retrato.webp")} alt="Tainá Andrade, arquiteta" fill quality={90} sizes="(min-width: 768px) 560px, 100vw" className="object-cover object-[50%_30%] transition-transform duration-[1.4s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03]" />
+        <div className="absolute inset-x-3 bottom-3 rounded-[12px] bg-night/80 p-4">
+          <p className="text-[1.1rem] tracking-[-0.02em]">Tainá Andrade</p>
+          <p className="text-[0.82rem] text-cream/80">Arquiteta · 18 anos de projetos autorais</p>
+        </div>
+      </RevealImage>
       <div>
         <p className="eyebrow text-cream/75">Nossa filosofia</p>
         <h2 className="t-h1 mt-4">Projetar também é pensar no tempo.</h2>

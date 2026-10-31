@@ -22,4 +22,3 @@ export function useWebGL() {
 
 export const HeroScene = dynamic(() => import("./Scenes").then((m) => m.HeroScene), { ssr: false });
 export const RingScene = dynamic(() => import("./Scenes").then((m) => m.RingScene), { ssr: false });
-export const ArchScene = dynamic(() => import("./Scenes").then((m) => m.ArchScene), { ssr: false });

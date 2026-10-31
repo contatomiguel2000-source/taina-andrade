@@ -4,7 +4,6 @@
   Cenas 3D (React Three Fiber). Carregadas só no navegador (ver Three.tsx).
   - HeroScene: fotos de projetos flutuando em profundidade; o mouse move a câmera e a rolagem "voa" para dentro.
   - RingScene: projetos num anel 3D que gira com a rolagem e com o arrastar; clique abre o projeto.
-  - ArchScene: escultura de arcos (as aberturas em arco dos projetos dela) que acompanha o mouse.
   Cada Canvas pausa quando sai da tela.
 */
 
@@ -270,73 +269,3 @@ export const RingScene = memo(function RingScene({ items, onSelect, onFront, rot
     </div>
   );
 });
-
-/* =================== ESCULTURA DE ARCOS =================== */
-
-function archShape(w: number, h: number, t: number) {
-  // arco (porta com topo em semicírculo) com um vão interno
-  const r = w / 2;
-  const s = new THREE.Shape();
-  s.moveTo(-r, 0);
-  s.lineTo(-r, h - r);
-  s.absarc(0, h - r, r, Math.PI, 0, true);
-  s.lineTo(r, 0);
-  s.lineTo(-r, 0);
-  const ri = r - t;
-  const hole = new THREE.Path();
-  hole.moveTo(-ri, 0.001);
-  hole.lineTo(-ri, h - r);
-  hole.absarc(0, h - r, ri, Math.PI, 0, true);
-  hole.lineTo(ri, 0.001);
-  hole.lineTo(-ri, 0.001);
-  s.holes.push(hole);
-  return s;
-}
-
-function Arches() {
-  const group = useRef<THREE.Group>(null);
-  const shape = useMemo(() => archShape(1.6, 2.6, 0.22), []);
-  const extrude = useMemo(() => ({ depth: 0.28, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 2, curveSegments: 20 }), []);
-  useFrame((state, dt) => {
-    if (!group.current) return;
-    const still = reduced();
-    group.current.rotation.y = THREE.MathUtils.damp(group.current.rotation.y, still ? 0.4 : state.pointer.x * 0.6 + Math.sin(state.clock.elapsedTime * 0.25) * 0.25, 2.5, dt);
-    group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, still ? 0 : -state.pointer.y * 0.18, 2.5, dt);
-  });
-  const tones = ["#6b3a26", "#a0714f", "#d8c3a2"];
-  return (
-    <group ref={group} position={[0, -1.25, 0]}>
-      {tones.map((c, i) => (
-        <mesh key={c} position={[(i - 1) * 0.55, 0, -i * 0.7]}>
-          <extrudeGeometry args={[shape, extrude]} />
-          <meshStandardMaterial color={c} roughness={0.55} metalness={0.08} />
-        </mesh>
-      ))}
-      <Float speed={1.4} floatIntensity={0.6} rotationIntensity={0.4}>
-        <mesh position={[0.15, 1.15, 0.6]}>
-          <sphereGeometry args={[0.32, 32, 32]} />
-          <meshStandardMaterial color="#e9dcc4" roughness={0.25} metalness={0.15} />
-        </mesh>
-      </Float>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-        <circleGeometry args={[3.2, 64]} />
-        <meshStandardMaterial color="#1a1310" roughness={0.9} />
-      </mesh>
-    </group>
-  );
-}
-
-export function ArchScene() {
-  const [wrap, vis, near] = useVisible<HTMLDivElement>();
-  return (
-    <div ref={wrap} className="absolute inset-0">
-      {near && <Canvas frameloop={vis ? "always" : "never"} dpr={lowPower() ? DPR_LOW : DPR} camera={{ position: [0, 0.4, 5.4], fov: 40 }} gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}>
-        <ambientLight intensity={0.35} />
-        <directionalLight position={[3, 5, 4]} intensity={2.2} color="#ffe2c2" />
-        <pointLight position={[-3, 1, 2]} intensity={14} color="#c97b4a" />
-        <pointLight position={[2, 2.5, -2]} intensity={8} color="#fff1dc" />
-        <Arches />
-      </Canvas>}
-    </div>
-  );
-}
