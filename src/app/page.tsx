@@ -47,7 +47,7 @@ export default function Home() {
           <div className={wrap}>
             <div className="mb-10 grid gap-6 md:grid-cols-[1fr_17rem] md:items-end">
               <div>
-                <p className="eyebrow text-cream/75">Expertise*</p>
+                <p className="eyebrow text-cream/75">Expertise</p>
                 <Split text="Espaços pensados. Detalhes com propósito." className="t-h1 mt-4 max-w-[34rem]" />
               </div>
               <p className="text-[0.95rem] text-cream/75">Passe o mouse (ou toque) para girar cada cartão e ver o que entra em cada serviço.</p>
@@ -61,7 +61,7 @@ export default function Home() {
           <div className={wrap}>
             <div className="mb-10 grid gap-6 md:grid-cols-[1fr_17rem] md:items-end">
               <div>
-                <p className="eyebrow text-cream/75">Processo*</p>
+                <p className="eyebrow text-cream/75">Processo</p>
                 <Split text="Do primeiro traço à casa pronta." className="t-h1 mt-4 max-w-[30rem]" />
               </div>
               <p className="text-[0.95rem] text-cream/75">Uma casa onde você entra e mora, sem sentir que ainda falta alguma coisa.</p>
@@ -85,7 +85,7 @@ export default function Home() {
           <div className={wrap}>
             <div className="mb-10 grid gap-6 md:grid-cols-[1fr_17rem] md:items-end">
               <div>
-                <p className="eyebrow text-cream/75">Em movimento*</p>
+                <p className="eyebrow text-cream/75">Em movimento</p>
                 <Split text="Os projetos, por dentro." className="t-h1 mt-4" />
               </div>
               <p className="text-[0.95rem] text-cream/75">Arraste ou use as setas. Clique no vídeo da frente para assistir com som.</p>
@@ -99,7 +99,7 @@ export default function Home() {
           <div className={wrap}>
             <div className="mb-10 grid gap-6 md:grid-cols-[1fr_17rem] md:items-end">
               <div>
-                <p className="eyebrow text-cream/75">Palavras gentis*</p>
+                <p className="eyebrow text-cream/75">Palavras gentis</p>
                 <Split text="Os espaços falam. As pessoas também." className="t-h1 mt-4 max-w-[30rem]" />
               </div>
               <a href={studio.mapsUrl} target="_blank" rel="noopener noreferrer" className="text-[0.95rem] text-cream/75 underline-offset-4 hover:underline">
@@ -114,7 +114,7 @@ export default function Home() {
         <section id="perguntas" data-title="Perguntas" className="py-16 md:py-24">
           <div className={`${wrap} grid gap-10 md:grid-cols-[1fr_1.5fr]`}>
             <div>
-              <p className="eyebrow text-cream/75">Perguntas*</p>
+              <p className="eyebrow text-cream/75">Perguntas</p>
               <Split text="Antes de você chamar." className="t-h1 mt-4" />
             </div>
             <Faq />
@@ -125,7 +125,7 @@ export default function Home() {
         <section id="contato" data-title="Contato" className="py-16 md:py-24">
           <div className={`${wrap} grid gap-3 md:grid-cols-2`}>
             <Reveal className="tone-accent rounded-[18px] bg-wine p-6 md:p-10">
-              <p className="eyebrow text-cream/90">Vamos conversar*</p>
+              <p className="eyebrow text-cream/90">Vamos conversar</p>
               <Split text="Vamos criar algo extraordinário." className="t-h1 mt-4 max-w-[24rem]" />
               <p className="mt-4 max-w-[24rem] text-cream/80">Todo espaço significativo começa com uma conversa. Preencha e a mensagem abre pronta no WhatsApp.</p>
               <div className="mt-6">
@@ -161,7 +161,7 @@ export default function Home() {
           <div className={`${wrap} grid gap-10 md:grid-cols-[1.4fr_0.6fr_0.6fr_1fr]`}>
             <div>
               <Image src={asset("/img/logo-claro.png")} alt="Monograma Tainá Andrade" width={36} height={42} unoptimized className="mb-6 h-10 w-auto" />
-              <p className="eyebrow text-cream/80">Vamos conversar*</p>
+              <p className="eyebrow text-cream/80">Vamos conversar</p>
               <p className="mt-3 text-[clamp(1.6rem,2.6vw,2.2rem)] leading-[1.08] tracking-[-0.035em]">
                 Um espaço em mente?
                 <br />

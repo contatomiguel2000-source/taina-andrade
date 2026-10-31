@@ -227,7 +227,7 @@ export function Statement() {
   return (
     <div ref={ref} className="[perspective:1600px]">
       <div className="tone-accent rounded-[18px] bg-wine px-6 py-16 text-center transition-transform duration-300 md:px-16 md:py-24" style={{ transform: reduced() ? "none" : `rotateX(${tilt}deg)` }}>
-        <p className="eyebrow text-cream/90">O estúdio*</p>
+        <p className="eyebrow text-cream/90">O estúdio</p>
         <p className="mx-auto mt-6 max-w-[46rem] text-[clamp(1.55rem,3vw,2.6rem)] leading-[1.15] tracking-[-0.03em]">
           {words.map((w, i) => (
             <span key={i} className="transition-colors duration-300" style={{ color: i < lit ? "var(--color-cream)" : "color-mix(in srgb, var(--c-fg) 38%, transparent)" }}>
@@ -251,22 +251,37 @@ export function Projects() {
   const gl = useWebGL();
   const [open, setOpen] = useState<{ p: number; m: number } | null>(null);
   const [front, setFront] = useState(0);
+  // a galeria grande só troca quando o anel para (antes, remontava a cada projeto que passava no arrasto)
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setShown(front), 380);
+    return () => clearTimeout(t);
+  }, [front]);
+  const frontRef = useRef(0);
+  useEffect(() => {
+    frontRef.current = front;
+  }, [front]);
   const rot = useRef(0);
   const drag = useRef<{ x: number; r: number; moved: boolean } | null>(null);
   const n = projects.length;
   const step = (Math.PI * 2) / n;
-  const goTo = (i: number) => {
-    const target = -i * step;
-    const k = Math.round((rot.current - target) / (Math.PI * 2));
-    rot.current = target + k * Math.PI * 2;
-    setFront(i);
-  };
+  const goTo = useCallback(
+    (i: number) => {
+      const target = -i * step;
+      const k = Math.round((rot.current - target) / (Math.PI * 2));
+      rot.current = target + k * Math.PI * 2;
+      setFront(i);
+    },
+    [step],
+  );
+  // funções estáveis: o 3D não é redesenhado pelo React quando o título muda
+  const onSelect = useCallback((i: number) => (i === frontRef.current ? setOpen({ p: i, m: 0 }) : goTo(i)), [goTo]);
   const pr = projects[front];
   return (
     <div>
       <div className="grid gap-6 md:grid-cols-[1fr_19rem] md:items-end">
         <div>
-          <p className="eyebrow text-cream/75">Projetos selecionados*</p>
+          <p className="eyebrow text-cream/75">Projetos selecionados</p>
           <h2 className="t-h1 mt-4">Espaços com histórias para contar.</h2>
         </div>
         <p className="text-[0.95rem] text-cream/80">Gire o anel (arraste ou use as setas) e veja as fotos e os vídeos de cada projeto logo abaixo, em tamanho grande.</p>
@@ -293,7 +308,7 @@ export function Projects() {
             drag.current = null;
           }}
         >
-          <RingScene items={projects} rot={rot} onSelect={(i) => (i === front ? setOpen({ p: i, m: 0 }) : goTo(i))} onFront={setFront} />
+          <RingScene items={projects} rot={rot} onSelect={onSelect} onFront={setFront} />
         </div>
       )}
 
@@ -318,7 +333,7 @@ export function Projects() {
         </span>
       </div>
 
-      <ProjectStrip key={pr.slug} index={front} onOpen={(m) => setOpen({ p: front, m })} />
+      <ProjectStrip key={projects[shown].slug} index={shown} onOpen={(m) => setOpen({ p: shown, m })} />
 
       {/* todos os projetos */}
       <div className="mt-12 grid grid-cols-2 gap-3 md:grid-cols-6">
@@ -523,7 +538,7 @@ export function Featured() {
           <video ref={vid} className="absolute inset-0 h-full w-full object-cover" src={asset("/video/filme-memorias-preview.mp4")} poster={asset("/img/memorias-1.webp")} muted loop playsInline preload="none" aria-hidden />
           <div className="absolute inset-0 bg-gradient-to-t from-night/85 via-night/35 to-night/30" />
           <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center" style={{ transform: `translate(${m.x * -14}px, ${m.y * -10}px)` }}>
-            <p className="eyebrow text-cream/75">Projeto em destaque* · Mostra Artefacto 2026</p>
+            <p className="eyebrow text-cream/75">Projeto em destaque · Mostra Artefacto 2026</p>
             <h2 className="mt-4 text-[clamp(2.4rem,6vw,5.2rem)] leading-[0.95] tracking-[-0.05em]">
               Living de
               <br />
@@ -648,7 +663,7 @@ export function Philosophy() {
         <p className="pointer-events-none absolute bottom-4 left-5 text-[0.78rem] text-cream/80">Arcos: das villas mediterrâneas às venezianas do Living de Memórias.</p>
       </div>
       <div>
-        <p className="eyebrow text-cream/75">Nossa filosofia*</p>
+        <p className="eyebrow text-cream/75">Nossa filosofia</p>
         <h2 className="t-h1 mt-4">Projetar também é pensar no tempo.</h2>
         <div className="mt-8 border-t border-cream/15">
           {philosophy.map((f, i) => (
